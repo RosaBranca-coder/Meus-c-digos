@@ -1,0 +1,203 @@
+body {
+    background-color: antiquewhite;
+}
+button {
+    background-color:green;
+    color:whitesmoke;
+    font-size: 20px;
+    border-radius: 12px;
+    padding: 10px 24px;
+    cursor: pointer;
+    position: static;
+}
+body:hover {
+    background-color: antiquewhite;
+}
+body:active {
+    background-color: antiquewhite;
+}
+h6 {
+    color:darkgray;
+    font-size: 12px;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    position: static; /* sem deslocamento absoluto */
+}
+h6:hover {
+    color:darkgray;
+    font-size: 12px;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    font-weight: bold;
+    text-align: center;
+    position: relative;
+    top: 400px;
+}
+h6:active {
+    color:darkgray;
+    font-size: 12px;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    font-weight: bold;
+    text-align: center;
+    position: relative;
+    top: 400px;
+}
+.container {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    overflow: visible; /* importante: não cria barra de rolagem */
+}
+.form-estoque {
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+}
+.form-estoque input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    flex: 1 1 180px; /* cresce e encolhe conforme espaço */
+    min-width: 140px;
+    box-sizing: border-box;
+}
+.btn-adicionar {
+    padding: 8px 16px;
+    background-color: green;
+    color: whitesmoke;
+    cursor: pointer;
+    justify-content: center;
+}
+.tabela-estoque {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-collapse: collapse;
+    margin: 20px 0; /* centraliza a tabela */
+    font-size: 15px;
+    position: relative;
+    top: 0;
+    table-layout: auto; /* permite colunas naturais */
+    background: #fff;
+}
+/* permitir quebra de linha nas células para evitar overflow */
+.tabela-estoque th,
+.tabela-estoque td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: normal; /* permite quebra de linha */
+    overflow: visible;
+    text-overflow: clip;
+}
+/* remover larguras fixas por coluna para o layout ficar fluído */
+.tabela-estoque th:nth-child(1),
+.tabela-estoque td:nth-child(1),
+.tabela-estoque th:nth-child(2),
+.tabela-estoque td:nth-child(2),
+.tabela-estoque th:nth-child(3),
+.tabela-estoque td:nth-child(3),
+.tabela-estoque th:nth-child(4),
+.tabela-estoque td:nth-child(4),
+.tabela-estoque th:nth-child(5),
+.tabela-estoque td:nth-child(5) {
+    width: auto;
+}
+/* Responsivo */
+@media (max-width: 700px) {
+    .tabela-estoque {
+        font-size: 14px;
+    }
+    .tabela-estoque th, .tabela-estoque td {
+        padding: 8px;
+    }
+    .form-estoque input {
+        flex: 1 1 120px;
+    }
+}
+/* Responsivo: em telas pequenas a tabela fica maior para leitura */
+@media (max-width: 700px) {
+    .tabela-estoque {
+        width: 95%;
+        max-width: none;
+    }
+}
+
+/* Centralizar todas as imagens no topo (top center) */
+img {
+    display: block;           /* remove inline flow */
+    margin: 12px auto 18px;   /* centraliza horizontalmente e afasta do topo/elementos */
+    max-width: 280px;         /* limita tamanho para não estourar layout */
+    width: auto;
+    height: auto;
+}
+
+/* Se quiser que a imagem fique sempre visível no topo ao rolar, use sticky:
+   (descomente para ativar)
+*/
+/*
+img.sticky-top {
+    position: sticky;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+}
+*/
+
+/* esconder ações por padrão e mostrar apenas em hover/focus/active */
+.tabela-estoque .acoes button {
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+/* mostrar em hover (mouse), focus-within (teclado) ou quando a linha tem classe .active (tap) */
+.tabela-estoque tr:hover .acoes button,
+.tabela-estoque tr:focus-within .acoes button,
+.tabela-estoque tr.active .acoes button {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* pequenas melhorias visuais para os botões de ação */
+.tabela-estoque .acoes button {
+    margin-left: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.tabela-estoque .btn-editar {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+}
+
+.tabela-estoque .btn-remover {
+    background: #e53935;
+    color: #fff;
+    border: none;
+}
+
+/* Esconder texto "Ações" mas manter espaço da coluna */
+.tabela-estoque th:last-child {
+    color: transparent;
+    user-select: none;
+}
+
+/* Manter largura da coluna de ações */
+.tabela-estoque th:last-child,
+.tabela-estoque td:last-child {
+    width: 120px;
+}
+

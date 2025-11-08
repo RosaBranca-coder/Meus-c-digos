@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <img src="https://3brasseurs.com.br/wp-content/uploads/2023/04/logo-3-brasseurs.png" alt="Logo 3 Brasseurs Itaim">
+
+    <div class="container">
+        <div class="top-actions">
+            <a href="index.html"><button class="btn-voltar">Voltar</button></a>
+            <button onclick="adicionarItem()" class="btn-adicionar">Adicionar Item</button>
+        </div>
+
+        <h1>Controle de Estoque</h1>
+        
+        <div class="form-estoque">
+            <input type="text" id="item" placeholder="Nome do item" aria-label="Nome do item">
+            <input type="number" id="quantidade" placeholder="Quantidade" aria-label="Quantidade">
+            <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" aria-label="Peso">
+            <input type="date" id="data" placeholder="Data" aria-label="Data">
+            <input type="date" id="validade" placeholder="Data de Validade" aria-label="Validade">
+            <input type="text" id="responsavel" placeholder="Responsável" aria-label="Responsável">
+        </div>
+
+        <table class="tabela-estoque">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Quantidade</th>
+                    <th>Peso (kg)</th>
+                    <th>Data</th>
+                    <th>Validade</th>
+                    <th>Responsável</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="lista-estoque">
+                <!-- linhas serão inseridas pelo script -->
+            </tbody>
+        </table>
+    </div>
+    
+    <h6>Versão alpha 0.0.2</h6>
+    
+    <script src="script.js"></script>
+</body>
+</html>
