@@ -7,45 +7,83 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Logo -->
     <img src="https://3brasseurs.com.br/wp-content/uploads/2023/04/logo-3-brasseurs.png" alt="Logo 3 Brasseurs Itaim">
 
     <div class="container">
         <div class="top-actions">
-            <a href="index.html"><button class="btn-voltar">Voltar</button></a>
-            <button onclick="adicionarItem()" class="btn-adicionar">Adicionar Item</button>
+            <a href="index.html"><button>Voltar</button></a>
+            <button onclick="adicionarItem()">Adicionar Item</button>
+            <button onclick="abrirScanner()">Ler QR</button>
+            <button onclick="limparFiltroQr()">Limpar filtro</button>
+
+            <!-- Filtro de categoria (fixo, com todas as categorias) -->
+            <select id="filtro-categoria" onchange="filtrarPorCategoria(); salvarCategoriaSelecionada();">
+                <option value="todas">Todas</option>
+                <option value="Carnes">Carnes</option>
+                <option value="Hortifruti">Hortifruti</option>
+                <option value="Bebidas">Bebidas</option>
+                <option value="Mercearia">Mercearia</option>
+                <option value="Limpeza">Limpeza</option>
+            </select>
         </div>
 
         <h1>Controle de Estoque</h1>
-        
+
+        <!-- Ficha de cadastro -->
         <div class="form-estoque">
             <input type="text" id="item" placeholder="Nome do item" aria-label="Nome do item">
             <input type="number" id="quantidade" placeholder="Quantidade" aria-label="Quantidade">
             <input type="number" step="0.01" id="peso" placeholder="Peso (kg)" aria-label="Peso">
-            <input type="date" id="data" placeholder="Data" aria-label="Data">
-            <input type="date" id="validade" placeholder="Data de Validade" aria-label="Validade">
+            <input type="date" id="data" aria-label="Data de entrada">
+            <input type="date" id="validade" aria-label="Data de validade">
             <input type="text" id="responsavel" placeholder="Responsável" aria-label="Responsável">
+            <input type="text" id="categoria" placeholder="Categoria" aria-label="Categoria">
         </div>
 
-        <table class="tabela-estoque">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Quantidade</th>
-                    <th>Peso (kg)</th>
-                    <th>Data</th>
-                    <th>Validade</th>
-                    <th>Responsável</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="lista-estoque">
-                <!-- linhas serão inseridas pelo script -->
-            </tbody>
-        </table>
+        <!-- Tabela de estoque (agora com wrapper responsivo) -->
+        <div class="table-wrapper">
+            <table class="tabela-estoque">
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Nome</th>
+                        <th>Quantidade</th>
+                        <th>Peso (kg)</th>
+                        <th>Data</th>
+                        <th>Validade</th>
+                        <th>Responsável</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-estoque">
+                    <!-- preenchido via script.js -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SCANNER DE QR (câmera) -->
+        <div id="scanner-container" style="display:none; margin-top:16px; padding:12px; border:1px solid #ccc; border-radius:8px; background:#fafafa;">
+            <h3>Leitor de QR Code</h3>
+            <div id="scanner-reader" style="width:320px; max-width:100%;"></div>
+            <div id="scanner-status" style="margin-top:8px; font-size:12px; color:#333;">
+                Aponte a câmera para a etiqueta.
+            </div>
+            <button onclick="fecharScanner()">Fechar leitor</button>
+        </div>
     </div>
-    
-    <h6>Versão alpha 0.0.2</h6>
-    
+
+    <h6>Versão alpha 0.0.3</h6>
+
+    <!-- Lib para GERAR QR Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Lib para LER QR Codes (scanner) -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <!-- Container oculto para gerar QR temporário -->
+    <div id="qr-temp" style="display:none;"></div>
+
+    <!-- Script principal -->
     <script src="script.js"></script>
 </body>
 </html>

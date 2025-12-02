@@ -1,203 +1,379 @@
+/* ===== Layout geral ===== */
+
 body {
-    background-color: antiquewhite;
+    margin: 0;
+    padding: 16px;
+    background: antiquewhite;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #222;
 }
-button {
-    background-color:green;
-    color:whitesmoke;
+/* Botões + select de categoria com a MESMA aparência */
+button,
+#filtro-categoria {
+    background-color: green;
+    color: whitesmoke;
     font-size: 20px;
     border-radius: 12px;
     padding: 10px 24px;
     cursor: pointer;
     position: static;
+    border: 1px solid #0b4d0b;
 }
-body:hover {
-    background-color: antiquewhite;
+
+/* Mesmo efeito ao passar o mouse / clicar (opcional, mas recomendado) */
+button:hover,
+#filtro-categoria:hover {
+    background-color: #0f7a0f;
 }
-body:active {
-    background-color: antiquewhite;
+
+button:active,
+#filtro-categoria:active {
+    background-color: #0b4d0b;
 }
-h6 {
-    color:darkgray;
-    font-size: 12px;
-    font-family: "Arial Narrow", Arial, sans-serif;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 20px;
-    position: static; /* sem deslocamento absoluto */
+
+
+/* Logo centralizada e responsiva */
+img[alt*="3 Brasseurs"] {
+    display: block;
+    max-width: 180px;
+    height: auto;
+    margin: 0 auto 16px auto;
 }
-h6:hover {
-    color:darkgray;
-    font-size: 12px;
-    font-family: "Arial Narrow", Arial, sans-serif;
-    font-weight: bold;
-    text-align: center;
-    position: relative;
-    top: 400px;
-}
-h6:active {
-    color:darkgray;
-    font-size: 12px;
-    font-family: "Arial Narrow", Arial, sans-serif;
-    font-weight: bold;
-    text-align: center;
-    position: relative;
-    top: 400px;
-}
+
+/* Caixa principal */
 .container {
     max-width: 1100px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
+    margin: 0 auto 16px auto;
+    background: #ffffff;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    overflow: visible; /* importante: não cria barra de rolagem */
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
-.form-estoque {
-    margin: 20px 0;
+
+/* ===== Topo e botões ===== */
+
+.top-actions {
     display: flex;
-    gap: 12px;
     flex-wrap: wrap;
+    gap: 8px;
     align-items: center;
-    justify-content: flex-start;
+    margin-bottom: 16px;
 }
-.form-estoque input {
-    padding: 10px;
-    border: 1px solid #ddd;
+
+.top-actions a {
+    text-decoration: none;
+}
+
+/* Botões padrão */
+.top-actions button {
+    padding: 8px 12px;
     border-radius: 6px;
-    flex: 1 1 180px; /* cresce e encolhe conforme espaço */
-    min-width: 140px;
+    border: 1px solid #1b5e20;
+    background-color: #2e7d32;   /* verde */
+    color: smokewhite;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.top-actions button:hover {
+    background-color: #388e3c;
+}
+
+.top-actions button:active {
+    background-color: #1b5e20;
+    transform: scale(0.98);
+}
+
+.top-actions button:focus {
+    outline: none;
+    box-shadow: 0 0 4px green;
+}
+
+/* SELECT — estilo verde igual aos botões */
+#filtro-categoria {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: green;
+    color: #fff;
+    border: 1px solid #1b5e20;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#filtro-categoria:hover {
+    background-color: green;
+}
+
+#filtro-categoria:active {
+    background-color: #1b5e20;
+    transform: scale(0.98);
+}
+
+#filtro-categoria:focus {
+    outline: none;
+    box-shadow: 0 0 4px green;
+}
+
+/* Mesma altura para botões e select */
+.top-actions select,
+.top-actions button {
+    height: 36px;
+}
+
+/* ===== Títulos ===== */
+
+h1 {
+    margin: 0 0 12px 0;
+    font-size: 22px;
+    color: #333;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+h6 {
+    text-align: center;
+    margin-top: 8px;
+    color: #777;
+    font-weight: normal;
+    font-size: 11px;
+}
+
+/* ===== Formulário de cadastro ===== */
+
+.form-estoque {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 8px 12px;
+    margin-bottom: 16px;
+}
+
+.form-estoque input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
     box-sizing: border-box;
 }
-.btn-adicionar {
-    padding: 8px 16px;
-    background-color: green;
-    color: whitesmoke;
-    cursor: pointer;
-    justify-content: center;
+
+/* ===== Tabela de estoque ===== */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
 }
+
+/* A tabela pode rolar horizontalmente em telas pequenas */
 .tabela-estoque {
     width: 100%;
-    max-width: 100%;
-    height: auto;
     border-collapse: collapse;
-    margin: 20px 0; /* centraliza a tabela */
-    font-size: 15px;
-    position: relative;
-    top: 0;
-    table-layout: auto; /* permite colunas naturais */
-    background: #fff;
+    min-width: 700px; /* garante que colunas não amassem demais */
+    font-size: 14px;
 }
-/* permitir quebra de linha nas células para evitar overflow */
+
+.tabela-estoque thead {
+    background: #eeeeee;
+}
+
 .tabela-estoque th,
 .tabela-estoque td {
-    padding: 12px;
-    text-align: left;
+    padding: 8px;
     border-bottom: 1px solid #ddd;
-    white-space: normal; /* permite quebra de linha */
-    overflow: visible;
-    text-overflow: clip;
+    text-align: left;
 }
-/* remover larguras fixas por coluna para o layout ficar fluído */
-.tabela-estoque th:nth-child(1),
-.tabela-estoque td:nth-child(1),
-.tabela-estoque th:nth-child(2),
-.tabela-estoque td:nth-child(2),
-.tabela-estoque th:nth-child(3),
-.tabela-estoque td:nth-child(3),
-.tabela-estoque th:nth-child(4),
-.tabela-estoque td:nth-child(4),
-.tabela-estoque th:nth-child(5),
-.tabela-estoque td:nth-child(5) {
-    width: auto;
+
+.tabela-estoque th {
+    font-weight: bold;
 }
-/* Responsivo */
-@media (max-width: 700px) {
-    .tabela-estoque {
-        font-size: 14px;
-    }
-    .tabela-estoque th, .tabela-estoque td {
+
+.tabela-estoque tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+/* Botões dentro da tabela (ações) – estilo neutro */
+.tabela-estoque button {
+    padding: 4px 8px;
+    background: green;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+
+/* ===== Scanner de QR ===== */
+
+#scanner-container {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+}
+
+#scanner-status {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+/* ===== Responsividade ===== */
+
+/* Tablets / telas médias */
+@media (max-width: 900px) {
+    body {
         padding: 8px;
     }
-    .form-estoque input {
-        flex: 1 1 120px;
+
+    .container {
+        padding: 12px;
     }
-}
-/* Responsivo: em telas pequenas a tabela fica maior para leitura */
-@media (max-width: 700px) {
+
     .tabela-estoque {
-        width: 95%;
-        max-width: none;
+        font-size: 13px;
+    }
+
+    .tabela-estoque th,
+    .tabela-estoque td {
+        padding: 6px;
     }
 }
 
-/* Centralizar todas as imagens no topo (top center) */
-img {
-    display: block;           /* remove inline flow */
-    margin: 12px auto 18px;   /* centraliza horizontalmente e afasta do topo/elementos */
-    max-width: 280px;         /* limita tamanho para não estourar layout */
-    width: auto;
-    height: auto;
+/* Celulares / telas pequenas */
+@media (max-width: 600px) {
+
+    img[alt*="3 Brasseurs"] {
+        max-width: 140px;
+        margin-bottom: 8px;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    .top-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .top-actions button,
+    .top-actions select {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-estoque {
+        grid-template-columns: 1fr;
+    }
+
+    .tabela-estoque {
+        font-size: 12px;
+        min-width: 650px;
+    }
+
+    .tabela-estoque th,
+    .tabela-estoque td {
+        padding: 4px;
+        white-space: nowrap; /* evita quebrar demais, usa scroll horizontal */
+    }
 }
 
-/* Se quiser que a imagem fique sempre visível no topo ao rolar, use sticky:
-   (descomente para ativar)
-*/
-/*
-img.sticky-top {
-    position: sticky;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-}
-*/
+/* ===== Layout responsivo (sem alterar cores existentes) ===== */
 
-/* esconder ações por padrão e mostrar apenas em hover/focus/active */
-.tabela-estoque .acoes button {
-    opacity: 0;
-    transform: translateY(-4px);
-    pointer-events: none;
-    transition: opacity .18s ease, transform .18s ease;
+/* Container principal centralizado e com largura máxima */
+.container {
+    max-width: 1100px;
+    margin: 0 auto 16px auto;
+    padding: 16px;
+    box-sizing: border-box;
 }
 
-/* mostrar em hover (mouse), focus-within (teclado) ou quando a linha tem classe .active (tap) */
-.tabela-estoque tr:hover .acoes button,
-.tabela-estoque tr:focus-within .acoes button,
-.tabela-estoque tr.active .acoes button {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
+/* Topo com botões + select se adaptando em linha/coluna */
+.top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
-/* pequenas melhorias visuais para os botões de ação */
-.tabela-estoque .acoes button {
-    margin-left: 6px;
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 6px;
+/* Campos do formulário em grid fluido */
+.form-estoque {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 8px 12px;
+    margin-bottom: 16px;
 }
 
-.tabela-estoque .btn-editar {
-    background: #1976d2;
-    color: #fff;
-    border: none;
+/* Responsividade dos inputs */
+.form-estoque input {
+    box-sizing: border-box;
 }
 
-.tabela-estoque .btn-remover {
-    background: #e53935;
-    color: #fff;
-    border: none;
+/* Wrapper da tabela para permitir scroll horizontal em telas pequenas */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
 }
 
-/* Esconder texto "Ações" mas manter espaço da coluna */
-.tabela-estoque th:last-child {
-    color: transparent;
-    user-select: none;
+/* Garante que a tabela não amasse demais em telas pequenas */
+.tabela-estoque {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
 }
 
-/* Manter largura da coluna de ações */
-.tabela-estoque th:last-child,
-.tabela-estoque td:last-child {
-    width: 120px;
+/* ===== Breakpoints ===== */
+
+/* Tablets / telas médias */
+@media (max-width: 900px) {
+    .container {
+        padding: 12px;
+    }
+
+    .tabela-estoque {
+        font-size: 13px;
+    }
+
+    .tabela-estoque th,
+    .tabela-estoque td {
+        padding: 6px;
+    }
 }
 
+/* Celulares / telas pequenas */
+@media (max-width: 600px) {
+
+    .container {
+        padding: 10px;
+    }
+
+    .top-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .top-actions button,
+    .top-actions select {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-estoque {
+        grid-template-columns: 1fr;
+    }
+
+    .tabela-estoque {
+        font-size: 12px;
+        min-width: 650px;
+    }
+
+    .tabela-estoque th,
+    .tabela-estoque td {
+        padding: 4px;
+        white-space: nowrap; /* usa scroll horizontal em vez de quebrar demais */
+    }
+}
