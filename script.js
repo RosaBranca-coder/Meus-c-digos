@@ -1,27 +1,49 @@
 // ===============================
-// CHAVE DE LOCALSTORAGE
+// FIREBASE / FIRESTORE
 // ===============================
-var STORAGE_KEY = "estoque_v1";
+let db = null;          // referência global ao Firestore
+let estoqueAtual = [];  // lista em memória (espelhando o Firestore)
 
-// ===============================
-// ARMAZENAMENTO
-// ===============================
-function carregarEstoque() {
-    try {
-        var raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        console.error("Erro ao ler estoque:", e);
-        return [];
+// 🔧 COLE AQUI SUA CONFIG DO FIREBASE
+// Pegue em: Configurações do projeto → Seus apps → Web → Configuração
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAXtTNe8Z7bIi5XE0FaO34M5Bb9-gTYLfU",
+  authDomain: "database-3bitaim004.firebaseapp.com",
+  projectId: "database-3bitaim004",
+  storageBucket: "database-3bitaim004.appspot.com", // <- CORRETO AQUI
+  messagingSenderId: "776862658000",
+  appId: "1:776862658000:web:eb3abb3095e5cda8569dd5",
+  measurementId: "G-8DRRP3DRJJ"
+};
+
+try {
+    if (typeof firebase !== "undefined") {
+        // Evita inicializar duas vezes caso script.js seja carregado em mais de uma página
+        if (firebase.apps && firebase.apps.length === 0) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.firestore();
+        console.log("🔥 Firebase/Firestore inicializado.");
+    } else {
+        console.warn("Firebase não está disponível nesta página (provavelmente index.html).");
     }
+} catch (e) {
+    console.error("Erro ao inicializar Firebase:", e);
 }
 
+// ===============================
+// ARMAZENAMENTO (agora baseado em memória / Firestore)
+// ===============================
+
+// Função de conveniência para pegar a lista atual
+function carregarEstoque() {
+    return estoqueAtual || [];
+}
+
+// (mantida para compat, mas não usada com Firestore)
 function salvarEstoque(lista) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-    } catch (e) {
-        console.error("Erro ao salvar estoque:", e);
-    }
+    console.warn("salvarEstoque chamado, mas Firestore é a fonte de verdade agora.");
 }
 
 // ===============================
@@ -86,9 +108,14 @@ function renderizarLista() {
 }
 
 // ===============================
-// CRUD DO ESTOQUE
+// CRUD DO ESTOQUE (via Firestore)
 // ===============================
 function adicionarItem() {
+    if (!db) {
+        alert("Banco de dados não inicializado (Firebase). Verifique a configuração.");
+        return;
+    }
+
     var nome = document.getElementById("item").value.trim();
     var quantidade = parseFloat(document.getElementById("quantidade").value);
     var peso = document.getElementById("peso").value;
@@ -102,8 +129,7 @@ function adicionarItem() {
         return;
     }
 
-    var lista = carregarEstoque();
-    lista.push({
+    db.collection("estoque").add({
         nome: nome,
         quantidade: quantidade,
         peso: peso,
@@ -111,12 +137,13 @@ function adicionarItem() {
         validade: validade,
         responsavel: responsavel,
         categoria: categoria
+    }).then(() => {
+        limparFormulario();
+        // Não precisa renderizar: o onSnapshot vai disparar
+    }).catch((e) => {
+        console.error("Erro ao adicionar item:", e);
+        alert("Erro ao adicionar item. Veja o console.");
     });
-
-    salvarEstoque(lista);
-    limparFormulario();
-    renderizarLista();
-    carregarCategoriaSelecionada(); // reaplica filtro se houver
 }
 
 function limparFormulario() {
@@ -130,19 +157,32 @@ function limparFormulario() {
 }
 
 function removerItem(index) {
+    if (!db) return;
+
     var lista = carregarEstoque();
     if (index < 0 || index >= lista.length) return;
-    lista.splice(index, 1);
-    salvarEstoque(lista);
-    renderizarLista();
-    carregarCategoriaSelecionada();
+
+    var item = lista[index];
+    if (!item || !item.id) {
+        console.error("Item sem ID Firestore:", item);
+        return;
+    }
+
+    db.collection("estoque").doc(item.id).delete()
+        .catch((e) => {
+            console.error("Erro ao remover item:", e);
+            alert("Erro ao remover item. Veja o console.");
+        });
 }
 
 function editarItem(index) {
+    if (!db) return;
+
     var lista = carregarEstoque();
     var it = lista[index];
     if (!it) return;
 
+    // Preenche o formulário
     document.getElementById("item").value = it.nome || "";
     document.getElementById("quantidade").value = it.quantidade || "";
     document.getElementById("peso").value = it.peso || "";
@@ -151,107 +191,176 @@ function editarItem(index) {
     document.getElementById("responsavel").value = it.responsavel || "";
     document.getElementById("categoria").value = it.categoria || "";
 
-    lista.splice(index, 1);
-    salvarEstoque(lista);
-    renderizarLista();
-    carregarCategoriaSelecionada();
+    // Remove o registro atual; ao salvar de novo, cria outro (mesmo comportamento do antigo)
+    if (it.id) {
+        db.collection("estoque").doc(it.id).delete()
+            .catch((e) => {
+                console.error("Erro ao remover item para edição:", e);
+            });
+    }
 }
 
 // ===============================
 // GERAÇÃO DE ETIQUETA + POP-UP DE IMPRESSÃO
 // ===============================
 function gerarEtiqueta(index) {
+  try {
     var lista = carregarEstoque();
     var item = lista[index];
-    if (!item) {
-        alert("Item não encontrado.");
-        return;
+    if (!item) { alert("Item não encontrado."); return; }
+
+    var texto = formatarEtiqueta(item).replace(/\r\n/g,"\n").replace(/\n\n+/g,"\n").trim();
+
+    var w = window.open("", "_blank", "width=500,height=360,top=100,left=100,resizable=no,toolbar=no,location=no,status=no,menubar=no");
+    if (!w) { alert("Pop-up bloqueado. Ative pop-ups e tente novamente."); return; }
+
+    var initial = "<!doctype html><html><head><meta charset='utf-8'><title>Etiqueta</title></head><body><div id='root'></div></body></html>";
+
+    w.document.open();
+    w.document.write(initial);
+    w.document.close();
+
+    if (typeof kjua === "undefined") {
+      console.error("kjua não encontrada.");
+      w.document.getElementById("root").innerText = "Erro: kjua não encontrada.";
+      return;
     }
 
-    if (typeof QRCode === "undefined") {
-        alert("Biblioteca de QRCode não carregada.\nVerifique sua conexão com a internet.");
-        return;
-    }
-
-    var texto = formatarEtiqueta(item);
-    var temp = document.getElementById("qr-temp");
-    if (!temp) {
-        alert("Elemento #qr-temp não encontrado no HTML.");
-        return;
-    }
-    temp.innerHTML = "";
-
+    var svgEl;
     try {
-        new QRCode(temp, {
-            text: texto,
-            width: 140,
-            height: 140,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.L
-        });
+      svgEl = kjua({
+        text: texto,
+        render: 'svg',
+        ecLevel: 'L',
+        crisp: true,
+        size: 400,
+        quiet: 1
+      });
     } catch (e) {
-        console.error("Erro ao gerar QRCode:", e);
-        alert("Erro ao gerar QRCode. O texto pode estar grande demais.");
-        return;
+      console.error("Erro ao gerar SVG com kjua:", e);
+      w.document.getElementById("root").innerText = "Erro ao gerar QR.";
+      return;
     }
 
-    setTimeout(function () {
-        var img = temp.querySelector("img") || temp.querySelector("canvas");
-        var dataUrl = "";
+    var svgXml = "";
+    try {
+      var serializer = new XMLSerializer();
+      svgXml = serializer.serializeToString(svgEl);
+    } catch (e) {
+      console.error("Erro ao serializar SVG:", e);
+      try {
+        var root = w.document.getElementById("root");
+        root.innerHTML = "";
+        root.appendChild(w.document.importNode(svgEl, true));
+      } catch (err2) {
+        console.error("Fallback de inserção falhou:", err2);
+        w.document.getElementById("root").innerText = "Erro ao inserir QR.";
+        return;
+      }
+      insertRemaining(w, texto);
+      return;
+    }
 
-        if (img) {
-            if (img.tagName && img.tagName.toLowerCase() === "img") {
-                dataUrl = img.src;
-            } else if (typeof img.toDataURL === "function") {
-                dataUrl = img.toDataURL("image/png");
-            }
+    var etiquetaCss = `
+      body {
+        margin: 0;
+        padding: 4mm;
+        font-family: Arial, Helvetica, sans-serif;
+        width: 70mm;
+        box-sizing: border-box;
+      }
+      .top-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 4mm;
+        width: 100%;
+      }
+      .logo img {
+        width: 14mm;
+        height: 14mm;
+        transform: rotate(-20deg);
+        object-fit: contain;
+        display: block;
+        opacity: 0.9;
+      }
+      .qr {
+        width: 28mm;
+        height: 28mm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .qr img, .qr svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .info {
+        margin-top: 3mm;
+        width: 62mm;
+        font-size: 11px;
+        line-height: 1.2;
+        word-break: break-word;
+        white-space: pre-wrap;
+        text-align: left;
+      }
+      .print-btn {
+        display: block;
+        margin-top: 6mm;
+        padding: 8px;
+        background: green;
+        color: #fff;
+        border: 0;
+        font-size: 14px;
+        border-radius: 6px;
+        width: 100%;
+        cursor: pointer;
+      }
+      @media print {
+        .print-btn {
+          display: none;
         }
+      }
+    `;
 
-        var w = window.open(
-            "",
-            "popupEtiqueta",
-            "width=500,height=320,top=100,left=100,resizable=no,toolbar=no,location=no,status=no,menubar=no"
-        );
-        if (!w) {
-            alert("Não foi possível abrir o pop-up. Desbloqueie pop-ups para este site.");
-            return;
+    var finalHtml = "<!doctype html><html><head><meta charset='utf-8'><title>Etiqueta</title><style>" + etiquetaCss + "</style></head><body><div class='etq'><div class='logo'><img src='https://3brasseurs.com.br/wp-content/uploads/2023/04/logo-3-brasseurs.png' alt='Logo'></div><div class='qr'>" + svgXml + "</div><div class='info'>" + escapeHtml(texto).replace(/\n/g,"<br>") + "</div><button class='print-btn' onclick='window.print()'>Imprimir</button></div></body></html>";
+
+    w.document.open();
+    w.document.write(finalHtml);
+    w.document.close();
+
+    try { w.focus(); } catch (e) {}
+
+    function insertRemaining(win, textoStr) {
+      try {
+        var root = win.document.getElementById("root");
+        if (!root) {
+          win.document.body.innerHTML = "<div id='root'></div>";
+          root = win.document.getElementById("root");
         }
+        root.innerHTML = "<div class='etq'><div class='logo'><img src='https://3brasseurs.com.br/wp-content/uploads/2023/04/logo-3-brasseurs.png' alt='Logo' style='width:18mm;height:18mm;transform:rotate(-20deg);object-fit:contain;'></div></div>";
+        try {
+          root.appendChild(win.document.importNode(svgEl, true));
+        } catch(e){ console.error("insertRemaining append failed", e); }
+        var info = win.document.createElement("div");
+        info.className = "info";
+        info.innerHTML = escapeHtml(textoStr).replace(/\n/g,"<br>");
+        root.appendChild(info);
+        var btn = win.document.createElement("button");
+        btn.className = "print-btn";
+        btn.onclick = function(){ win.print(); };
+        btn.innerText = "Imprimir";
+        win.document.body.appendChild(btn);
+      } catch (err) {
+        console.error("insertRemaining geral falhou:", err);
+      }
+    }
 
-        var safeTexto = escapeHtml(texto).replace(/\n/g, "<br>");
-
-        var html = "";
-        html += "<html><head><meta charset='utf-8'><title>Etiqueta</title>";
-        html += "<style>";
-        html += "body{margin:0;padding:4mm;font-family:Arial,sans-serif;width:70mm;height:50mm;}";
-        html += ".etq{display:flex;align-items:center;gap:3mm;}";
-        html += ".logo{margin-top:-2mm;}";
-        html += ".logo img{width:18mm;height:18mm;object-fit:contain;transform:rotate(-20deg);}";
-        html += ".qr{margin-top:3mm;}";
-        html += ".qr img{width:32mm;height:32mm;object-fit:contain;}";
-        html += ".info{font-size:12px;line-height:1.2;max-width:28mm;overflow-wrap:break-word;}";
-        html += ".print-btn{margin-top:6px;width:100%;padding:6px;background:#000;color:#fff;border:none;cursor:pointer;border-radius:4px;font-size:14px;}";
-        html += "</style></head><body>";
-
-        html += "<div class='etq'>";
-        html += "<div class='logo'><img src='https://3brasseurs.com.br/wp-content/uploads/2023/04/logo-3-brasseurs.png' alt='Logo'></div>";
-        html += "<div class='qr'>";
-        if (dataUrl) {
-            html += "<img src='" + dataUrl + "' alt='QR Code'>";
-        } else {
-            html += "(sem QR)";
-        }
-        html += "</div>";
-        html += "<div class='info'>" + safeTexto + "</div>";
-        html += "</div>";
-        html += "<button class='print-btn' onclick='window.print()'>Imprimir</button>";
-
-        html += "</body></html>";
-
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-    }, 300);
+  } catch (errOuter) {
+    console.error("gerarEtiqueta erro externo:", errOuter);
+    alert("Erro ao gerar etiqueta. Veja console.");
+  }
 }
 
 // ===============================
@@ -340,11 +449,10 @@ function abrirScanner() {
         function(decodedText, decodedResult) {
             if (status) status.textContent = "QR lido. Filtrando produto...";
             filtrarPorQr(decodedText);
-            // para depois do primeiro sucesso
             fecharScanner();
         },
         function(errorMessage) {
-            // erros contínuos ignorados para não poluir
+            // erros contínuos ignorados
         }
     ).then(function() {
         scannerAtivo = true;
@@ -414,9 +522,51 @@ function limparFiltroQr() {
 }
 
 // ===============================
+// LISTENER EM TEMPO REAL DO FIRESTORE
+// ===============================
+function iniciarListenerEstoque() {
+    if (!db) {
+        console.warn("Listener não iniciado: Firestore indisponível.");
+        return;
+    }
+    if (!document.getElementById("lista-estoque")) {
+        // Não estamos na página de estoque
+        return;
+    }
+
+    db.collection("estoque")
+      .orderBy("nome")
+      .onSnapshot(function(snapshot) {
+          var lista = [];
+          snapshot.forEach(function(doc) {
+              var data = doc.data() || {};
+              lista.push({
+                  id: doc.id,
+                  nome: data.nome || "",
+                  quantidade: data.quantidade || 0,
+                  peso: data.peso || "",
+                  data: data.data || "",
+                  validade: data.validade || "",
+                  responsavel: data.responsavel || "",
+                  categoria: data.categoria || ""
+              });
+          });
+
+          estoqueAtual = lista;
+          renderizarLista();
+          carregarCategoriaSelecionada();
+      }, function(error) {
+          console.error("Erro ao ouvir estoque em tempo real:", error);
+      });
+}
+
+// ===============================
 // INICIALIZAÇÃO
 // ===============================
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
+    // Se estivermos na página de estoque, habilita listener
+    iniciarListenerEstoque();
+    // Se não estiver, estas chamadas só não vão achar elementos (e tudo bem)
     renderizarLista();
     carregarCategoriaSelecionada();
 });
