@@ -41,7 +41,7 @@
             <input type="text" id="categoria" placeholder="Categoria" aria-label="Categoria">
         </div>
 
-        <!-- Tabela de estoque (agora com wrapper responsivo) -->
+        <!-- Tabela de estoque -->
         <div class="table-wrapper">
             <table class="tabela-estoque">
                 <thead>
@@ -73,7 +73,7 @@
         </div>
     </div>
 
-    <h6>Versão alpha 0.0.3</h6>
+    <h6>Versão alpha 0.0.4</h6>
 
     <!-- Lib para GERAR QR Codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -82,15 +82,16 @@
 
     <!-- Container oculto para gerar QR temporário -->
     <div id="qr-temp" style="display:none;"></div>
-<!-- Yjs e adaptadores (CDN) -->
-<script src="https://unpkg.com/yjs@13.7.46/dist/yjs.js"></script>
-<script src="https://unpkg.com/y-webrtc@10.0.11/dist/y-webrtc.js"></script>
-<script src="https://unpkg.com/y-indexeddb@1.0.8/dist/y-indexeddb.js"></script>
 
-<!-- alternativa CDN (caso o primeiro falhe) -->
-<script src="https://unpkg.com/kjua@0.9.0/dist/kjua.min.js"></script>
+    <!-- kjua (QR em SVG para etiqueta) -->
+    <script src="https://unpkg.com/kjua@0.9.0/dist/kjua.min.js"></script>
+
+    <!-- Firebase (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
     <!-- Script principal -->
     <script src="script.js"></script>
+    
 </body>
 </html>
