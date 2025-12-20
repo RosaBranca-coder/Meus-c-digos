@@ -8,9 +8,74 @@
 </head>
 <body>
     <img src="https://3brasseurs.com.br/wp-content/uploads/2023/04/logo-3-brasseurs.png" alt="Logo 3 Brasseurs Itaim">
-    <h6>Versão alpha 0.0.2</h6>
-       <!-- Criar um botão de exclusão de Etiquetas 
-    Criar um botão de leitura do código qr -->
-    <a href="index.html"><button class="btn-voltar">Voltar</button></a>
-</body>
+    <h6>Versão alpha 0.0.4</h6>
+
+    <div class="container">
+        <div class="top-actions">
+            <a href="index.html"><button class="btn-voltar">Voltar</button></a>
+            <button onclick="popularSelectProdutos()">Atualizar produtos</button>
+            <button onclick="imprimirSelecionadas()">Imprimir selecionadas</button>
+            <button onclick="excluirSelecionadas()">Excluir selecionadas</button>
+        </div>
+
+        <h1>Cadastro de Etiquetas</h1>
+
+        <!-- Formulário de criação de etiqueta -->
+        <div class="form-estoque">
+            <label>Produto (selecionar ou digitar):</label>
+            <select id="select-produto" onchange="onProdutoSelecionado()">
+                <option value="">-- Selecionar produto --</option>
+            </select>
+            <input type="text" id="nome-etiqueta" placeholder="Nome da etiqueta (pode digitar)">
+
+            <label>Validade (horas):</label>
+            <div class="hora-group" style="display:flex;gap:8px;align-items:center;">
+                <button class="hora-btn" onclick="setValidityHours(24)">24h</button>
+                <button class="hora-btn" onclick="setValidityHours(48)">48h</button>
+                <button class="hora-btn" onclick="setValidityHours(72)">72h</button>
+                <input type="number" id="validade-horas" placeholder="Horas" style="width:80px;">
+            </div>
+
+            <input type="number" id="quant-etiqueta" placeholder="Quantidade">
+            <input type="number" step="0.01" id="peso-etiqueta" placeholder="Peso (kg)">
+            <input type="text" id="resp-etiqueta" placeholder="Responsável">
+            <div style="margin-top:8px;">
+                <button onclick="criarEtiquetaFromForm()">Gerar etiqueta</button>
+            </div>
+        </div>
+
+        <!-- Lista de etiquetas -->
+        <div class="table-wrapper">
+            <table class="tabela-estoque">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="chk-todos" onclick="toggleTodos(this)"></th>
+                        <th>Nome</th>
+                        <th>Quantidade</th>
+                        <th>Peso (kg)</th>
+                        <th>Data</th>
+                        <th>Validade</th>
+                        <th>Responsável</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-etiquetas">
+                    <!-- preenchido via script.js -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <h6>Versão alpha 0.0.6</h6>
+
+    <!-- kjua (QR em SVG para etiqueta) -->
+    <script src="https://unpkg.com/kjua@0.9.0/dist/kjua.min.js"></script>
+
+    <!-- Firebase (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <script src="script.js"></script>
+</body> 
 </html>

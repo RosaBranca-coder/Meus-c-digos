@@ -90,6 +90,30 @@ img[alt*="3 Brasseurs"] {
     box-shadow: 0 0 4px green;
 }
 
+/* Botão desabilitado */
+button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modal de autenticação simples */
+.modal {
+    position: fixed;
+    left: 0; top: 0; right: 0; bottom: 0;
+    display: flex; align-items:center; justify-content:center;
+    background: rgba(0,0,0,0.4);
+    z-index: 9999;
+}
+.modal-content {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    min-width: 280px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.modal-content input { width: 100%; padding:8px; box-sizing:border-box; margin-top:8px; }
+.modal-content button { margin-right:8px; }
+
 /* SELECT — estilo verde igual aos botões */
 #filtro-categoria {
     padding: 8px 12px;
@@ -157,6 +181,33 @@ h6 {
     border: 1px solid #ccc;
     font-size: 14px;
     box-sizing: border-box;
+}
+
+/* Botões de validade (menores para o formulário de etiquetas) */
+.hora-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.hora-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+    background-color: #2e7d32;
+    color: #fff;
+    border: 1px solid #1b5e20;
+    cursor: pointer;
+    height: 34px;
+    line-height: 1;
+}
+
+.hora-btn:hover { background-color: #388e3c; }
+
+/* Em telas pequenas, mantenha os botões pequenos e empilháveis se necessário */
+@media (max-width: 600px) {
+    .hora-group { flex-wrap: wrap; }
+    .hora-btn { flex: none; width: auto; }
 }
 
 /* ===== Tabela de estoque ===== */
