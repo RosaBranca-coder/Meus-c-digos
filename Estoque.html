@@ -17,6 +17,7 @@
             <button id="btn-auth" onclick="abrirModalAuth()">Desbloquear</button>
             <button onclick="abrirScanner()">Ler QR</button>
             <button onclick="limparFiltroQr()">Limpar filtro</button>
+            <button onclick="testarLeituraFirestore()">Testar leitura</button>
 
             <!-- Filtro de categoria (fixo, com todas as categorias) -->
             <select id="filtro-categoria" onchange="filtrarPorCategoria(); salvarCategoriaSelecionada();">
@@ -27,9 +28,15 @@
                 <option value="Mercearia">Mercearia</option>
                 <option value="Limpeza">Limpeza</option>
             </select>
+
+            <input id="filtro-nome" type="search" placeholder="Buscar por nome" oninput="filtrarPorNome(this.value)" style="margin-left:8px;padding:6px;border-radius:6px;" />
+            <button onclick="document.getElementById('filtro-nome').value='';filtrarPorNome('')" style="margin-left:4px;padding:6px;border-radius:6px;">Limpar</button>
         </div>
 
+
+
         <h1>Controle de Estoque</h1>
+        <div id="estoque-count" style="margin-top:8px;color:#333;font-size:14px;">Itens no estoque: <strong id="estoque-count-num">0</strong></div>
 
         <!-- Ficha de cadastro -->
         <div class="form-estoque">

@@ -96,6 +96,14 @@ button[disabled] {
     cursor: not-allowed;
 }
 
+/* Banner de status do DB */
+#db-status { font-size: 13px; display: none !important; }
+#db-status button { background: #fff; color: #6a4b00; border: 1px solid #ffd59e; border-radius: 4px; cursor:pointer; }
+
+/* Contador do estoque */
+#estoque-count { display:block; }
+#estoque-count strong { font-weight: 700; }
+
 /* Modal de autenticação simples */
 .modal {
     position: fixed;
