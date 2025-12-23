@@ -29,6 +29,10 @@ const firebaseConfig = {
   measurementId: "G-8DRRP3DRJJ"
 };
 
+// Senha única para acesso ao sistema de estoque (altere para a desejada)
+// Atenção: essa senha ficará no código do cliente. Para ambientes sensíveis, considere um método seguro no servidor.
+const MASTER_PASSWORD = "admin";
+
 try {
     if (typeof firebase !== "undefined") {
         // Evita inicializar duas vezes caso script.js seja carregado em mais de uma página
@@ -244,7 +248,10 @@ function createAccount() {
 
 function signOut() {
     if (!auth) return;
-    auth.signOut().then(function() { fecharModalAuth(); alert('Desconectado.'); });
+    auth.signOut().then(function() { 
+        sessionStorage.setItem("autorizado","false");
+        fecharModalAuth(); alert('Desconectado.'); 
+    });
 }
 
 function changePasswordPrompt() {
@@ -261,17 +268,36 @@ function changePasswordPrompt() {
     }).catch(function(e){ alert('Reautenticação falhou: ' + (e && e.message ? e.message : e)); });
 }
 
+// Fluxo simples de autenticação usando a senha única (MASTER_PASSWORD)
+function toggleSimpleAuth() {
+    if (isAuthorized()) {
+        sessionStorage.setItem("autorizado","false");
+        alert("Acesso bloqueado.");
+        updateAuthUI();
+        return;
+    }
+    var pw = prompt("Digite a senha de acesso ao estoque:");
+    if (pw === null) return;
+    if (pw === MASTER_PASSWORD) {
+        sessionStorage.setItem("autorizado","true");
+        alert("Acesso permitido.");
+        updateAuthUI();
+    } else {
+        alert("Senha incorreta.");
+    }
+}
+
 function updateAuthUI() {
-    var user = auth && auth.currentUser;
+    var unlocked = isAuthorized();
     var btnAuth = document.getElementById("btn-auth");
-    if (btnAuth) btnAuth.textContent = user ? "Bloquear" : "Desbloquear";
+    if (btnAuth) btnAuth.textContent = unlocked ? "Bloquear" : "Desbloquear";
     var addBtn = document.getElementById("btn-add");
-    if (addBtn) addBtn.disabled = !user;
+    if (addBtn) addBtn.disabled = !unlocked;
     // desabilita inputs do formulário
     var ids = ["item","quantidade","peso","data","validade","responsavel","categoria"];
     for (var i = 0; i < ids.length; i++) {
         var el = document.getElementById(ids[i]);
-        if (el) el.disabled = !user;
+        if (el) el.disabled = !unlocked;
     }
     // re-renderizar lista para aplicar botões desabilitados
     try { renderizarLista(); } catch(e) { /* render pode não existir nesta página */ }
@@ -617,7 +643,7 @@ function renderizarEtiquetas() {
         html += "<td>" + escapeHtml(it.nome || "") + "</td>";
         html += "<td>" + escapeHtml(String(it.quantidade || "")) + "</td>";
         html += "<td>" + escapeHtml(it.peso || "") + "</td>";
-        html += "<td>" + escapeHtml(formatarData(it.dataCriacao)) + "</td>";
+        html += "<td>" + escapeHtml(formatarData(it.data || it.dataCriacao)) + "</td>";
         html += "<td>" + escapeHtml(formatarData(it.validade)) + "</td>";
         html += "<td>" + escapeHtml(it.responsavel || "") + "</td>";
         html += "<td><button onclick=\"imprimirEtiquetaPorId('" + it.id + "')\">Imprimir</button> <button onclick=\"excluirEtiqueta('" + it.id + "')\">Remover</button></td>";
@@ -669,6 +695,7 @@ function iniciarListenerEtiquetas() {
                 validade: data.validade || "",
                 validade_horas: data.validade_horas || 0,
                 estoqueId: data.estoqueId || "",
+                data: data.data || "",
                 dataCriacao: data.dataCriacao || ""
             });
         });
@@ -716,7 +743,6 @@ function toggleTodos(chk) {
 
 function criarEtiquetaFromForm() {
     if (!db) { alert("Banco de dados não inicializado."); return; }
-    // AVISO: criação de etiquetas reduz quantidade/peso no estoque mesmo sem autenticação
     var sel = document.getElementById("select-produto");
     var estoqueId = sel ? sel.value : "";
     var nome = document.getElementById("nome-etiqueta").value.trim();
@@ -724,6 +750,7 @@ function criarEtiquetaFromForm() {
     var peso = parseFloat(document.getElementById("peso-etiqueta").value);
     var responsavel = document.getElementById("resp-etiqueta").value.trim();
     var horas = parseInt(document.getElementById("validade-horas").value) || 0;
+    var dataInput = document.getElementById("data-etiqueta") ? document.getElementById("data-etiqueta").value : "";
 
     if (!estoqueId) {
         if (!nome) { alert("Selecione um produto ou digite o nome"); return; }
@@ -741,19 +768,17 @@ function criarEtiquetaFromForm() {
     }
 
     if (!nome || isNaN(qtd) || qtd <= 0) { alert("Informe nome e quantidade válida."); return; }
-
     var listaEst = carregarEstoque();
     var itemEst = null;
     for (var i = 0; i < listaEst.length; i++) {
         if (listaEst[i].id === estoqueId) { itemEst = listaEst[i]; break; }
     }
     if (!itemEst) { alert("Produto do estoque não encontrado."); return; }
-    if (qtd > itemEst.quantidade) { alert("Quantidade solicitada maior que disponível no estoque."); return; }
-    if (isNaN(peso) || peso < 0) { peso = 0; }
-    if (peso > parseFloat(itemEst.peso || 0)) { alert("Peso solicitado maior que disponível no estoque."); return; }
 
     var validadeDate = new Date();
     validadeDate.setHours(validadeDate.getHours() + (isNaN(horas) ? 0 : horas));
+
+    var dataIso = dataInput ? new Date(dataInput).toISOString() : new Date().toISOString();
 
     var etiquetaObj = {
         nome: nome,
@@ -763,30 +788,20 @@ function criarEtiquetaFromForm() {
         validade_horas: horas,
         validade: validadeDate.toISOString(),
         estoqueId: estoqueId,
+        data: dataIso,
         dataCriacao: new Date().toISOString()
     };
 
-    db.runTransaction(function(tx) {
-        var estRef = db.collection("estoque").doc(estoqueId);
-        return tx.get(estRef).then(function(estDoc) {
-            if (!estDoc.exists) throw "Estoque removido.";
-            var estData = estDoc.data();
-            var novoQtd = (parseFloat(estData.quantidade || 0) - qtd);
-            var novoPeso = (parseFloat(estData.peso || 0) - peso);
-            if (novoQtd < 0 || novoPeso < 0) throw "Quantidade/Peso insuficientes no estoque.";
-            var etiquetasRef = db.collection("etiquetas").doc();
-            tx.set(etiquetasRef, etiquetaObj);
-            tx.update(estRef, { quantidade: novoQtd, peso: novoPeso });
-            return true;
-        });
-    }).then(function() {
+    // Criar somente o documento de etiqueta; não alterar o estoque
+    db.collection("etiquetas").add(etiquetaObj).then(function() {
         document.getElementById("nome-etiqueta").value = "";
         document.getElementById("quant-etiqueta").value = "";
         document.getElementById("peso-etiqueta").value = "";
         document.getElementById("resp-etiqueta").value = "";
         document.getElementById("validade-horas").value = "";
         if (document.getElementById("select-produto")) document.getElementById("select-produto").selectedIndex = 0;
-        alert("Etiqueta criada e estoque atualizado.");
+        if (document.getElementById("data-etiqueta")) document.getElementById("data-etiqueta").value = (new Date()).toISOString().slice(0,10);
+        alert("Etiqueta criada.");
     }).catch(function(e) {
         console.error("Erro ao criar etiqueta:", e);
         alert("Erro ao criar etiqueta: " + e);
@@ -1147,6 +1162,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderizarLista();
     renderizarEtiquetas();
     carregarCategoriaSelecionada();
+
+    // Preenche campo de data das etiquetas com a data atual (se existir)
+    var elDate = document.getElementById('data-etiqueta');
+    if (elDate) { elDate.value = (new Date()).toISOString().slice(0,10); }
 
     // Atualiza contador inicial
     try { atualizarContadorEstoque(); } catch(e) { }
